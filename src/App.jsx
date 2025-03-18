@@ -9,10 +9,9 @@ import { updateUserPlaces } from "./http.js";
 
 function App() {
   const selectedPlace = useRef();
-
   const [userPlaces, setUserPlaces] = useState([]);
-
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [errorMsg, setErrorMsg] = useState();
 
   function handleStartRemovePlace(place) {
     setModalIsOpen(true);
@@ -37,7 +36,8 @@ function App() {
     try {
       await updateUserPlaces([selectedPlace, ...userPlaces]);
     } catch (err) {
-      console.log(err);
+      setUserPlaces(userPlaces);
+      setErrorMsg({ message: err.message || "Something went wrong" });
     }
   }
 
@@ -49,8 +49,21 @@ function App() {
     setModalIsOpen(false);
   }, []);
 
+  function handleError() {
+    setErrorMsg(null);
+  }
+
   return (
     <>
+      <Modal open={errorMsg} onClose={handleError}>
+        {errorMsg && (
+          <Error
+            title="Error Occured"
+            message={errorMsg.message}
+            onConfirm={handleError}
+          />
+        )}
+      </Modal>
       <Modal open={modalIsOpen} onClose={handleStopRemovePlace}>
         <DeleteConfirmation
           onCancel={handleStopRemovePlace}
